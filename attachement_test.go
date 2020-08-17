@@ -56,6 +56,11 @@ func TestAttachments(t *testing.T) {
 		}
 	})
 
+	t.Run("Count()", func(t *testing.T) {
+		count := att.Count()
+		assert.Equal(t, len(testTOC), count)
+	})
+
 	t.Run("Reader(): success", func(t *testing.T) {
 		r := att.Reader("att1")
 		data, err := ioutil.ReadAll(r)
@@ -143,6 +148,9 @@ func TestAttachments_NoAttachments(t *testing.T) {
 
 	list := att.List()
 	assert.Nil(t, list)
+
+	count := att.Count()
+	assert.Zero(t, count)
 
 	assert.Nil(t, att.Close())
 }

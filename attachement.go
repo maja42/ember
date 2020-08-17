@@ -9,7 +9,7 @@ import (
 	"github.com/maja42/ember/internal"
 )
 
-// Attachments is used to access embedded data of an executable.
+// Attachments represent embedded data in an executable.
 type Attachments struct {
 	exeFile *os.File
 	offsets map[string]int64
@@ -124,6 +124,11 @@ func (a *Attachments) List() []string {
 	return l
 }
 
+// Count returns the number of attachments.
+func (a *Attachments) Count() int {
+	return len(a.offsets)
+}
+
 // Reader returns a reader for a given attachment.
 // Returns nil if no attachment with that name exists.
 func (a *Attachments) Reader(name string) io.Reader {
@@ -132,4 +137,10 @@ func (a *Attachments) Reader(name string) io.Reader {
 		return nil
 	}
 	return io.NewSectionReader(a.exeFile, offset, a.sizes[name])
+}
+
+// Size returns the size of a specific attachment in bytes.
+// Returns zero if no attachment with that name exists.
+func (a *Attachments) Size(name string) int64 {
+	return a.sizes[name]
 }
