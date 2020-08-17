@@ -61,6 +61,25 @@ func TestAttachments(t *testing.T) {
 		assert.Equal(t, len(testTOC), count)
 	})
 
+	t.Run("Size(): success", func(t *testing.T) {
+		size := att.Size("att1")
+		assert.Equal(t, int64(len(testAttachments[0])), size)
+
+		size = att.Size("num2")
+		assert.Equal(t, int64(len(testAttachments[1])), size)
+
+		size = att.Size("3")
+		assert.Equal(t, int64(len(testAttachments[2])), size)
+
+		size = att.Size("four")
+		assert.Equal(t, int64(len(testAttachments[3])), size)
+	})
+
+	t.Run("Size(): non-existing file", func(t *testing.T) {
+		size := att.Size("unknown")
+		assert.Zero(t, size)
+	})
+
 	t.Run("Reader(): success", func(t *testing.T) {
 		r := att.Reader("att1")
 		data, err := ioutil.ReadAll(r)
