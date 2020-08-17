@@ -7,13 +7,13 @@ Embedding binary files (eg. zip-archives) is supported.
 
 ## Use case
 
-Often, executables require runtime- or user-defined configurations and resources that need to be stored alongside
+Applications often require runtime- or user-defined configuration and resources to be stored alongside
 the executable.
 This forces the end-user to deal with multiple files when copying/moving/distributing the application
-and also makes it possible to manipulate said configuration, which is not always desirable.
+and makes it possible to manipulate said configuration, which is not always desirable.
 
-The main use-case of ember  is to bundle such configuration files and other resources with the application at runtime.
-There is no need for providing a go-toolchain and re-building the application each time there is a new configuration.
+The main use-case of ember is to bundle such configuration files and other resources with the application at runtime.
+There is no need for setting up a go toolchain to (re-)build the application every time there is a new configuration.
 
 ## Cross platform
 
@@ -72,13 +72,13 @@ To embed files in the first place, create an `attachments.json` file describing 
 Afterwards, use cmd/embedder to attach the files to an already-built executable:
 
 ```bash
-./embedder -exe app -attachments attachments.json -out finishedApp
+./embedder -attachments ./attachments.json -exe ./myApp -out ./myFinishedApp
 ```
 
 The full workflow is shown in examples/list.
 
-Note: You can also write your own embedder with custom behaviour by importing `github.com/maja42/ember/embedding`.
-See the [GoDoc](https://godoc.org/github.com/maja42/ember/embedding)
+Note: You can also write your own embedder with custom behaviour and restrictions by importing `github.com/maja42/ember/embedding`.
+See the [GoDoc](https://godoc.org/github.com/maja42/ember/embedding) for more information.
 
 ## Contributions
 

@@ -27,9 +27,9 @@ type PrintlnFunc func(format string, args ...interface{})
 //
 // attachments is a map of attachment names to the corresponding readers for the content.
 //
-// logger (optional) is used to report the progress of embedding.
+// logger (optional) is used to report the progress during embedding.
 //
-// Note that all ReadSeekers are are seeked to their start before usage,
+// Note that all ReadSeekers are seeked to their start before usage,
 // meaning the entirety of readable content is embedded. Use io.SectionReader to avoid this.
 func Embed(out io.Writer, exe io.ReadSeeker, attachments map[string]io.ReadSeeker, logger PrintlnFunc) error {
 	if logger == nil {
@@ -84,6 +84,7 @@ func Embed(out io.Writer, exe io.ReadSeeker, attachments map[string]io.ReadSeeke
 // EmbedFiles embeds the given files into the target executable.
 //
 // attachments is a map of attachment names to the respective file's filepath.
+//
 // See Embed for more information.
 func EmbedFiles(out io.Writer, exe io.ReadSeeker, attachments map[string]string, logger PrintlnFunc) error {
 	reader := make(map[string]io.ReadSeeker, len(attachments))
