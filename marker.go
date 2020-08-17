@@ -6,7 +6,7 @@ import (
 )
 
 // marker is compiled into executables which accept attachments.
-// This allows the augmenter to verify that the target file is compatible.
+// This allows the embedder to verify that the target file is compatible.
 var marker = "~~MagicMarker for maja42/ember/v1~~"
 
 func init() {

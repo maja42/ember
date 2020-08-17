@@ -77,6 +77,9 @@ Afterwards, use cmd/embedder to attach the files to an already-built executable:
 
 The full workflow is shown in examples/list.
 
+Note: You can also write your own embedder with custom behaviour by importing `github.com/maja42/ember/embedding`.
+See the [GoDoc](https://godoc.org/github.com/maja42/ember/embedding)
+
 ## Contributions
 
 Feel free to submit feature requests, bug reports and pull requests.

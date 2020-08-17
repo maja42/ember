@@ -60,12 +60,12 @@ func OpenExe(exePath string) (*Attachments, error) {
 	tocSize := int(nextBoundary) - internal.BoundarySize
 
 	// read TOC
-	if _, err = exe.Seek(tocOffset, io.SeekStart); err != nil {
+	if _, err := exe.Seek(tocOffset, io.SeekStart); err != nil {
 		return nil, err
 	}
 
 	var jsonTOC = make([]byte, tocSize)
-	if _, err = io.ReadFull(exe, jsonTOC); err != nil {
+	if _, err := io.ReadFull(exe, jsonTOC); err != nil {
 		return nil, err
 	}
 
@@ -90,7 +90,7 @@ func OpenExe(exePath string) (*Attachments, error) {
 	}
 
 	var trailer = make([]byte, internal.BoundarySize)
-	if _, err = io.ReadFull(exe, trailer); err != nil {
+	if _, err := io.ReadFull(exe, trailer); err != nil {
 		if err == io.EOF || err == io.ErrUnexpectedEOF { // offsets point outside executable (missing data?)
 			return nil, newAttErr("corrupt attachment data (offsets too large)")
 		}
