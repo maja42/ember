@@ -104,11 +104,6 @@ func EmbedFiles(out io.Writer, exe io.ReadSeeker, attachments map[string]string,
 // verifyTargetExe ensures that the target executable is compatible.
 // The reader is seeked to the beginning afterwards.
 func verifyTargetExe(exe io.ReadSeeker) error {
-	// Rewind seeker to start-of-executable (just in case)
-	if _, err := exe.Seek(0, io.SeekStart); err != nil {
-		return err
-	}
-
 	// Check if the target executable is compatible.
 	// Compatible executables are importing 'ember' in the correct version,
 	// causing a marker-string to be present in the binary.
@@ -116,20 +111,7 @@ func verifyTargetExe(exe io.ReadSeeker) error {
 	marker := "~~MagicMarker for XXX~~"
 	marker = strings.ReplaceAll(marker, "XXX", compatibleVersion)
 
-	offset := internal.SeekPattern(exe, []byte(marker))
-	if offset == -1 { // not a go executable, or does not import correct library(-version)
-		return errors.New("incompatible (magic string not found)")
-	}
-
-	offset = internal.SeekBoundary(exe)
-	if offset != -1 {
-		return errors.New("already contains embedded content")
-	}
-
-	if _, err := exe.Seek(0, io.SeekStart); err != nil {
-		return err
-	}
-	return nil
+	return VerifyCompatibility(exe, marker)
 }
 
 // buildTOC returns the TOC (table-of-contents) for embedding the given data.
@@ -161,4 +143,36 @@ func getSize(r io.ReadSeeker) (int64, error) {
 		return 0, err
 	}
 	return size, nil
+}
+
+var ErrAlreadyEmbedded = errors.New("already contains embedded content")
+
+// VerifyCompatibility ensures that the target executable is compatible and not already augmented.
+// This means that the target executable contains the magic-string "marker" that is compiled into the executable,
+// which can be easily done by defining it in a global variable and using it in the init() function to ensure that
+// it is not optimized away by the go linker. An example can be seen in maja42/ember/marker.go
+//   (Note that the calling function's application should build this marker programmatically.
+//    Otherwise it will end up in the embeder's executable as well, letting it appear compatible.)
+// Returns ErrAlreadyEmbedded if the target executable already contains attachments.
+// The reader is seeked to the beginning afterwards.
+func VerifyCompatibility(exe io.ReadSeeker, marker string) error {
+	// Rewind seeker to start-of-executable (just in case)
+	if _, err := exe.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
+	offset := internal.SeekPattern(exe, []byte(marker))
+	if offset == -1 { // not a go executable, or does not import correct library(-version) and therefore not the correct marker
+		return errors.New("incompatible (magic string not found)")
+	}
+
+	offset = internal.SeekBoundary(exe)
+	if offset != -1 {
+		return ErrAlreadyEmbedded
+	}
+
+	if _, err := exe.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	return nil
 }

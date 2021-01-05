@@ -129,9 +129,15 @@ func (a *Attachments) Count() int {
 	return len(a.offsets)
 }
 
+type Reader interface {
+	io.ReadSeeker
+	io.ReaderAt
+	Size() int64
+}
+
 // Reader returns a reader for a given attachment.
 // Returns nil if no attachment with that name exists.
-func (a *Attachments) Reader(name string) io.Reader {
+func (a *Attachments) Reader(name string) Reader {
 	offset, ok := a.offsets[name]
 	if !ok {
 		return nil
