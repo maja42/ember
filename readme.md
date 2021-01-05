@@ -1,4 +1,5 @@
-# ember  [![GoDoc](https://godoc.org/github.com/maja42/ember?status.svg)](https://godoc.org/github.com/maja42/ember)
+# ember
+[![Go Report Card](https://goreportcard.com/badge/github.com/maja42/ember)](https://goreportcard.com/report/github.com/maja42/ember) [![GoDoc](https://godoc.org/github.com/maja42/ember?status.svg)](https://godoc.org/github.com/maja42/ember)
 
 Ember is a lightweight library and tool for embedding arbitrary resources into a go executable at runtime.
 The resources don't need to exist at compile time.

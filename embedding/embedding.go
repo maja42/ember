@@ -145,6 +145,7 @@ func getSize(r io.ReadSeeker) (int64, error) {
 	return size, nil
 }
 
+// ErrAlreadyEmbedded is returned if the target executable already contains attachments.
 var ErrAlreadyEmbedded = errors.New("already contains embedded content")
 
 // VerifyCompatibility ensures that the target executable is compatible and not already augmented.

@@ -36,7 +36,7 @@ func IsBoundary(data []byte) bool {
 	return bytes.Equal(boundary, data)
 }
 
-// WriteSection writes a new section with arbitrary data.
+// WriteBoundary writes a new section with arbitrary data.
 func WriteBoundary(w io.Writer) error {
 	if _, err := w.Write(boundary); err != nil {
 		return err

@@ -11,14 +11,17 @@ import (
 	"github.com/maja42/ember/embedding"
 )
 
+// CommandLine configuration
 type CommandLine struct {
 	Executable     string
 	AttachmentList string
 	Out            string
 }
 
+// AttachmentList maps embedded files (arbitrary name) to paths where they can be found on the filesystem.
 type AttachmentList map[string]string
 
+// LoadAttachmentList loads the list of attachments from a json file.
 func LoadAttachmentList(path string) AttachmentList {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {

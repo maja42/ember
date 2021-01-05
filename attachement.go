@@ -129,6 +129,7 @@ func (a *Attachments) Count() int {
 	return len(a.offsets)
 }
 
+// Reader groups basic methods available on attachments.
 type Reader interface {
 	io.ReadSeeker
 	io.ReaderAt
