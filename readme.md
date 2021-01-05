@@ -89,6 +89,49 @@ go build
 ./embedder -attachments ./attachments.json -exe ./myApp -out ./myFinishedApp
 ```
 
+## How does it work?
+
+ember uses a very primitive approach for embedding data to support any platform and to be independent of the go version, compiler, linker and so on.
+
+When embedding, the executable file is modified by simply appending additional data at the end.
+To detect the boundary between the original executable and the attachments, a special marker-string (magic string) is inserted in-between.
+
+
+```
+   +---------------+
+   |               |
+   |    original   |
+   |   executable  |
+   |               |
+   +---------------+
+   | marker-string |
+   +---------------+
+   |      TOC      |
+   +---------------+
+   | marker-string |
+   +---------------+
+   |     file1     | 
+   +---------------+
+   |     file2     |
+   +---------------+
+   |     file3     |
+   +---------------+
+```
+
+When starting the application and opening the attachments, the executable file is opened and searched for that specific marker string.
+
+The first blob appended to the executable is a TOC (table of contents) that lists all files, their size and byte-offset.
+This allows iterating and reading the individual attachments without seeking through the whole executable.
+It also compares sizes and offsets to ensure that the executable is consistent and complete.
+
+All content afterwards is the attached data.
+
+ember also performs a variety of security-checks to ensure that the produced executable will work correctly:
+- Check if the application imported `maja42/ember` in a compatible version
+- Ensure that the executable does not already contain attachments
+
+This approach also allows the use of exe-packers (compressors) and code signing.
+
 ## Contributions
 
 Feel free to submit feature requests, bug reports and pull requests.
