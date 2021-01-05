@@ -6,8 +6,8 @@ import (
 	"io"
 )
 
-// boundaryPart is appended n-times after the unzipper executable and marks the boundary between the executable and attachments.
-// It is used by the unzipper to detect when attachments start.
+// boundaryPart is appended n-times after the original application and marks the boundary between the executable and attachments.
+// It is used by the application to detect when attachments start.
 var boundaryPart = []byte{'#', 15, 1, 12, 1, '#'}
 
 // boundaryPartCount defines how often the boundary-character is repeated.
