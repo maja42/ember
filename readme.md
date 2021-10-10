@@ -30,7 +30,8 @@ This means that files can be attached to windows executables on both windows and
 Ember consists of two parts. 
 1. The `ember` package is imported by the application that receives attachments.
 2. The `ember/embedding` package is used by a separate application that attaches files to the already-compiled target executable. \
-This package can be used as a library. Alternatively there exists a CLI tool at `ember/cmd/embedder`.
+It can also be used to remove previously attached data from an augmented executable. \
+The package can be used as a library. Alternatively there exists a CLI tool at `ember/cmd/embedder`.
 
 ## Example
 

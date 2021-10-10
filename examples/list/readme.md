@@ -62,6 +62,27 @@ Attachment "file B" has 33 bytes:
 **This is the content of file B**
 ```
 
+
+## Removing embedding
+
+To revert this operation, the embedded content can be removed again.
+
+Using the embedder, execute the following:
+
+```
+cd ./examples/list
+./embedder -exe ./newList -out ./origList -remove
+```
+
+Output:
+
+```
+Removing embedded content from "newList" --> "origList"
+Finished
+```
+
+The resulting `origList` executable is identical to the original `list` executable.
+
 ## Cross-Platform
 
 Embedding can be done on any platform and for any platform.

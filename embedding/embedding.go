@@ -21,6 +21,7 @@ type PrintlnFunc func(format string, args ...interface{})
 // out receives the target executable including all attachments.
 //
 // exe reads from the target executable that should be augmented.
+//
 // Embed verifies that the target executable is compatible with this version of ember
 // by searching for the magic marker-string (compiled into every executable that imports ember).
 // Embed fails if the executable is incompatible or already contains embedded content.
@@ -111,7 +112,7 @@ func verifyTargetExe(exe io.ReadSeeker) error {
 	marker := "~~MagicMarker for XXX~~"
 	marker = strings.ReplaceAll(marker, "XXX", compatibleVersion)
 
-	return VerifyCompatibility(exe, marker)
+	return verifyCompatibility(exe, marker)
 }
 
 // buildTOC returns the TOC (table-of-contents) for embedding the given data.
@@ -148,15 +149,15 @@ func getSize(r io.ReadSeeker) (int64, error) {
 // ErrAlreadyEmbedded is returned if the target executable already contains attachments.
 var ErrAlreadyEmbedded = errors.New("already contains embedded content")
 
-// VerifyCompatibility ensures that the target executable is compatible and not already augmented.
+// verifyCompatibility ensures that the target executable is compatible and not already augmented.
 // This means that the target executable contains the magic-string "marker" that is compiled into the executable,
 // which can be easily done by defining it in a global variable and using it in the init() function to ensure that
 // it is not optimized away by the go linker. An example can be seen in maja42/ember/marker.go
 //   (Note that the calling function's application should build this marker programmatically.
-//    Otherwise it will end up in the embeder's executable as well, letting it appear compatible.)
+//    Otherwise, it will end up in the embeder's executable as well, letting it appear compatible.)
 // Returns ErrAlreadyEmbedded if the target executable already contains attachments.
 // The reader is seeked to the beginning afterwards.
-func VerifyCompatibility(exe io.ReadSeeker, marker string) error {
+func verifyCompatibility(exe io.ReadSeeker, marker string) error {
 	// Rewind seeker to start-of-executable (just in case)
 	if _, err := exe.Seek(0, io.SeekStart); err != nil {
 		return err
@@ -173,6 +174,48 @@ func VerifyCompatibility(exe io.ReadSeeker, marker string) error {
 	}
 
 	if _, err := exe.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ErrNothingEmbedded is returned if the executable does not contain any attachments.
+var ErrNothingEmbedded = errors.New("contains no embedded data")
+
+// RemoveEmbedding removes any data embedded with ember from the executable.
+// Returns ErrNothingEmbedded if the executable contains no embedded data.
+//
+// Any data appended to the executable after ember attached its content
+// will not be preserved.
+//
+// out receives the cleaned executable with all attachments stripped.
+//
+// exe reads from the augmented executable that contains attachments.
+//
+// logger (optional) is used to report the progress during embedding.
+//
+// Note that the ReadSeeker is seeked to its start before usage. Use io.SectionReader to avoid this.
+func RemoveEmbedding(out io.Writer, exe io.ReadSeeker, logger PrintlnFunc) error {
+	if logger == nil {
+		logger = func(string, ...interface{}) {}
+	}
+
+	// Rewind seeker to start-of-executable (just in case)
+	if _, err := exe.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
+	offset := internal.SeekBoundary(exe)
+	if offset == -1 { // no boundary string -> contains no embedded data
+		return ErrNothingEmbedded
+	}
+	if _, err := exe.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
+	originalSize := offset - int64(internal.BoundarySize)
+	origExeReader := io.LimitReader(exe, originalSize)
+	if _, err := io.Copy(out, origExeReader); err != nil {
 		return err
 	}
 	return nil
