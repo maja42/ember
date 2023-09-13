@@ -59,14 +59,20 @@ func TestEmbed(t *testing.T) {
 
 func Test_verifyTargetExe(t *testing.T) {
 	r := strings.NewReader(prepareExecutableData())
-	err := verifyTargetExe(r)
+	err := verifyTargetExe(r, false)
 	assert.Nil(t, err)
 }
 
 func Test_verifyTargetExe_invalidFile(t *testing.T) {
 	r := strings.NewReader("does not contain magic marker")
-	err := verifyTargetExe(r)
+	err := verifyTargetExe(r, false)
 	assert.EqualError(t, err, "incompatible (magic string not found)")
+}
+
+func Test_verifyTargetExe_invalidFile_checkSkipped(t *testing.T) {
+	r := strings.NewReader("does not contain magic marker")
+	err := verifyTargetExe(r, true)
+	assert.NoError(t, err)
 }
 
 func Test_verifyTargetExe_alreadyAugmented(t *testing.T) {
@@ -79,7 +85,7 @@ func Test_verifyTargetExe_alreadyAugmented(t *testing.T) {
 
 	r := strings.NewReader(content)
 
-	err := verifyTargetExe(r)
+	err := verifyTargetExe(r, false)
 	assert.EqualError(t, err, "already contains embedded content")
 }
 

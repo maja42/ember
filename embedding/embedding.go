@@ -13,6 +13,11 @@ import (
 
 const compatibleVersion = "maja42/ember/v1"
 
+// SkipCompatibilityCheck is used during emeddeding.
+// When the source-executable is compressed (eg. using an exe-packer), the compatibility cannot be confirmed and embedding fails.
+// By setting this flag to true, this compatibility-check will be skipped.
+var SkipCompatibilityCheck = false
+
 // PrintlnFunc is used for logging the embedding progress.
 type PrintlnFunc func(format string, args ...interface{})
 
@@ -37,7 +42,7 @@ func Embed(out io.Writer, exe io.ReadSeeker, attachments map[string]io.ReadSeeke
 		logger = func(string, ...interface{}) {}
 	}
 
-	if err := verifyTargetExe(exe); err != nil {
+	if err := verifyTargetExe(exe, SkipCompatibilityCheck); err != nil {
 		return fmt.Errorf("verify executable: %w", err)
 	}
 
@@ -104,14 +109,16 @@ func EmbedFiles(out io.Writer, exe io.ReadSeeker, attachments map[string]string,
 
 // verifyTargetExe ensures that the target executable is compatible.
 // The reader is seeked to the beginning afterwards.
-func verifyTargetExe(exe io.ReadSeeker) error {
-	// Check if the target executable is compatible.
-	// Compatible executables are importing 'ember' in the correct version,
-	// causing a marker-string to be present in the binary.
-	// String-replace is used to ensure the marker is not present in the embedder-executable.
-	marker := "~~MagicMarker for XXX~~"
-	marker = strings.ReplaceAll(marker, "XXX", compatibleVersion)
-
+func verifyTargetExe(exe io.ReadSeeker, skipCompatibilityCheck bool) error {
+	var marker string
+	if !skipCompatibilityCheck {
+		// Check if the target executable is compatible.
+		// Compatible executables are importing 'ember' in the correct version,
+		// causing a marker-string to be present in the binary.
+		// String-replace is used to ensure the marker is not present in the embedder-executable.
+		marker = "~~MagicMarker for XXX~~"
+		marker = strings.ReplaceAll(marker, "XXX", compatibleVersion)
+	}
 	return verifyCompatibility(exe, marker)
 }
 
@@ -153,8 +160,13 @@ var ErrAlreadyEmbedded = errors.New("already contains embedded content")
 // This means that the target executable contains the magic-string "marker" that is compiled into the executable,
 // which can be easily done by defining it in a global variable and using it in the init() function to ensure that
 // it is not optimized away by the go linker. An example can be seen in maja42/ember/marker.go
-//   (Note that the calling function's application should build this marker programmatically.
-//    Otherwise, it will end up in the embeder's executable as well, letting it appear compatible.)
+//
+//	(Note that the calling function's application should build this marker programmatically.
+//	 Otherwise, it will end up in the embeder's executable as well, letting it appear compatible.)
+//
+// If marker is empty, the compatibility-check is skipped. This can be useful if the source-executable was compressed
+// using an exe-packer.
+//
 // Returns ErrAlreadyEmbedded if the target executable already contains attachments.
 // The reader is seeked to the beginning afterwards.
 func verifyCompatibility(exe io.ReadSeeker, marker string) error {
@@ -163,12 +175,14 @@ func verifyCompatibility(exe io.ReadSeeker, marker string) error {
 		return err
 	}
 
-	offset := internal.SeekPattern(exe, []byte(marker))
-	if offset == -1 { // not a go executable, or does not import correct library(-version) and therefore not the correct marker
-		return errors.New("incompatible (magic string not found)")
+	if marker != "" {
+		offset := internal.SeekPattern(exe, []byte(marker))
+		if offset == -1 { // not a go executable, or does not import correct library(-version) and therefore not the correct marker
+			return errors.New("incompatible (magic string not found)")
+		}
 	}
 
-	offset = internal.SeekBoundary(exe)
+	offset := internal.SeekBoundary(exe)
 	if offset != -1 {
 		return ErrAlreadyEmbedded
 	}
