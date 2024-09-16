@@ -22,9 +22,11 @@ func Open() (*Attachments, error) {
 	if err != nil {
 		return nil, err
 	}
-	path, err = filepath.EvalSymlinks(path)
-	if err != nil {
-		return nil, err
+	if p, err := filepath.EvalSymlinks(path); err == nil {
+		// EvalSymlinks fails on Windows if the executable is located in the
+		// remote SYSVOL volume from the domain controller.
+		// It is therefore optional, any errors are ignored.
+		path = p
 	}
 	return OpenExe(path)
 }
