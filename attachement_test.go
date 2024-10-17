@@ -111,6 +111,20 @@ func TestAttachments(t *testing.T) {
 		err = att.Close()
 		assert.NoError(t, err)
 	})
+
+	t.Run("Offset(): success", func(t *testing.T) {
+		offset := att.Offset("att1")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("num2")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("3")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("four")
+		assert.NotZero(t, offset)
+	})
 }
 
 func prepareFile(t *testing.T, toc internal.TOC, attachments [][]byte) string {
