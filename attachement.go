@@ -153,3 +153,9 @@ func (a *Attachments) Reader(name string) Reader {
 func (a *Attachments) Size(name string) int64 {
 	return a.sizes[name]
 }
+
+// Offset returns the offset of a specific attachment in bytes, in relation to the start of the go executable.
+// Returns zero if no attachment with that name exists.
+func (a *Attachments) Offset(name string) int64 {
+	return a.offsets[name]
+}

@@ -107,6 +107,25 @@ func TestAttachments(t *testing.T) {
 		assert.Nil(t, r)
 	})
 
+	t.Run("Offset(): success", func(t *testing.T) {
+		offset := att.Offset("att1")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("num2")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("3")
+		assert.NotZero(t, offset)
+
+		offset = att.Offset("four")
+		assert.NotZero(t, offset)
+	})
+
+	t.Run("Offset(): non-existing file", func(t *testing.T) {
+		offset := att.Reader("unknown")
+		assert.Zero(t, offset)
+	})
+
 	t.Run("Close()", func(t *testing.T) {
 		err = att.Close()
 		assert.NoError(t, err)
