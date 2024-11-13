@@ -3,7 +3,7 @@ package ember
 import (
 	"crypto/rand"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -82,22 +82,22 @@ func TestAttachments(t *testing.T) {
 
 	t.Run("Reader(): success", func(t *testing.T) {
 		r := att.Reader("att1")
-		data, err := ioutil.ReadAll(r)
+		data, err := io.ReadAll(r)
 		assert.NoError(t, err)
 		assert.Equal(t, string(testAttachments[0]), string(data))
 
 		r = att.Reader("num2")
-		data, err = ioutil.ReadAll(r)
+		data, err = io.ReadAll(r)
 		assert.NoError(t, err)
 		assert.Equal(t, string(testAttachments[1]), string(data))
 
 		r = att.Reader("3")
-		data, err = ioutil.ReadAll(r)
+		data, err = io.ReadAll(r)
 		assert.NoError(t, err)
 		assert.Equal(t, string(testAttachments[2]), string(data))
 
 		r = att.Reader("four")
-		data, err = ioutil.ReadAll(r)
+		data, err = io.ReadAll(r)
 		assert.NoError(t, err)
 		assert.Equal(t, string(testAttachments[3]), string(data))
 	})
@@ -133,7 +133,7 @@ func TestAttachments(t *testing.T) {
 }
 
 func prepareFile(t *testing.T, toc internal.TOC, attachments [][]byte) string {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	assert.NoError(t, err)
 	defer file.Close()
 
@@ -202,7 +202,7 @@ func TestOpenExe_NoSuchFile(t *testing.T) {
 }
 
 func TestOpenExe_SecondBoundaryMissing(t *testing.T) {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	assert.NoError(t, err)
 	defer os.Remove(file.Name())
 
@@ -218,7 +218,7 @@ func TestOpenExe_SecondBoundaryMissing(t *testing.T) {
 }
 
 func TestOpenExe_BrokenTOC(t *testing.T) {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	assert.NoError(t, err)
 	defer os.Remove(file.Name())
 

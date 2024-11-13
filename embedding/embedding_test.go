@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -32,7 +31,7 @@ func TestEmbed(t *testing.T) {
 	assert.Equal(t, []byte(exe), exeBytes)
 
 	// write content to disk
-	tmpFile, err := ioutil.TempFile("", "")
+	tmpFile, err := os.CreateTemp("", "")
 	assert.NoError(t, err)
 	io.Copy(tmpFile, &out)
 	tmpFile.Close()
@@ -45,11 +44,11 @@ func TestEmbed(t *testing.T) {
 	assert.Equal(t, int64(13), att.Size("att1"))
 	assert.Equal(t, int64(14), att.Size("att2"))
 
-	content, err := ioutil.ReadAll(att.Reader("att1"))
+	content, err := io.ReadAll(att.Reader("att1"))
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("first content"), content)
 
-	content, err = ioutil.ReadAll(att.Reader("att2"))
+	content, err = io.ReadAll(att.Reader("att2"))
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("second content"), content)
 

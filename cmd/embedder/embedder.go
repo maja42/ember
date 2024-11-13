@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -24,7 +23,7 @@ type AttachmentList map[string]string
 
 // LoadAttachmentList loads the list of attachments from a json file.
 func LoadAttachmentList(path string) AttachmentList {
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		log.Panicf("Failed to open attachment list %q: %s", path, err)
 	}

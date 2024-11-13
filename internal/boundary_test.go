@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"errors"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +45,7 @@ func TestWriteBoundary(t *testing.T) {
 
 type errWriter struct{}
 
-func (errWriter) Write(p []byte) (n int, err error) {
+func (errWriter) Write([]byte) (n int, err error) {
 	return 0, errors.New("simulated error")
 }
 
@@ -87,7 +87,7 @@ func TestSeekBoundary(t *testing.T) {
 	offset = SeekBoundary(r)
 	assert.Equal(t, int64(len(boundary)), offset)
 
-	content, err := ioutil.ReadAll(r)
+	content, err := io.ReadAll(r)
 	assert.NoError(t, err)
 	assert.Equal(t, content, []byte("text 2"))
 
