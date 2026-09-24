@@ -3,6 +3,7 @@ package embedding
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/json"
 	"io"
 	"os"
 	"strings"
@@ -86,6 +87,46 @@ func Test_verifyTargetExe_alreadyAugmented(t *testing.T) {
 
 	err := verifyTargetExe(r, false)
 	assert.EqualError(t, err, "already contains embedded content")
+}
+
+// The embedded output must not depend on the order of the map it was built
+// from, which is what makes it reproducible. Both the TOC and the attachment
+// data that follows it are ordered by name.
+func TestEmbed_writesAttachmentsOrderedByName(t *testing.T) {
+	// Each attachment has content of its own length, so any other order
+	// produces different bytes.
+	exe := prepareExecutableData()
+	attachments := map[string]io.ReadSeeker{
+		"delta":   strings.NewReader("dddd"),
+		"bravo":   strings.NewReader("bb"),
+		"alpha":   strings.NewReader("a"),
+		"charlie": strings.NewReader("ccc"),
+	}
+
+	var out bytes.Buffer
+	err := Embed(&out, strings.NewReader(exe), attachments, nil)
+	assert.NoError(t, err)
+
+	embedded := out.Bytes()[len(exe):]
+
+	// The TOC sits between the first and second boundary.
+	tocOffset := internal.SeekBoundary(bytes.NewReader(embedded))
+	tocEnd := tocOffset + internal.SeekBoundary(bytes.NewReader(embedded[tocOffset:]))
+
+	var toc internal.TOC
+	err = json.Unmarshal(embedded[tocOffset:tocEnd-int64(internal.BoundarySize)], &toc)
+	assert.NoError(t, err)
+
+	names := make([]string, 0, len(toc))
+	for _, att := range toc {
+		names = append(names, att.Name)
+	}
+	assert.Equal(t, []string{"alpha", "bravo", "charlie", "delta"}, names)
+
+	// The attachment data follows, in the same order.
+	const expectedData = "abbcccdddd"
+	data := embedded[tocEnd : tocEnd+int64(len(expectedData))]
+	assert.Equal(t, expectedData, string(data))
 }
 
 func Test_buildTOC(t *testing.T) {
