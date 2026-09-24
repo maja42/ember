@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/maja42/ember/internal"
@@ -124,11 +125,18 @@ func verifyTargetExe(exe io.ReadSeeker, skipCompatibilityCheck bool) error {
 
 // buildTOC returns the TOC (table-of-contents) for embedding the given data.
 // All attachments are seeked to the beginning afterwards.
+// The returned TOC is ordered by name, as internal.TOC requires.
 func buildTOC(attachments map[string]io.ReadSeeker) (internal.TOC, error) {
+	names := make([]string, 0, len(attachments))
+	for name := range attachments {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
 	toc := make(internal.TOC, 0, len(attachments))
 
-	for name, r := range attachments {
-		size, err := getSize(r)
+	for _, name := range names {
+		size, err := getSize(attachments[name])
 		if err != nil {
 			return nil, fmt.Errorf("attachment %q: %w", name, err)
 		}
